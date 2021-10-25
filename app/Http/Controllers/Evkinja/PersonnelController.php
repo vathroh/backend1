@@ -6,6 +6,7 @@ use App\Http\Controllers\Evkinja\EvkinjaController;
 use App\Http\Controllers\Evkinja\SettingController;
 use App\Models\PersonnelEvaluationSetting;
 use App\Models\PersonnelEvaluationValue;
+use App\Models\PersonnelEvaluator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Models\JobTitle;
@@ -15,6 +16,27 @@ class PersonnelController extends EvkinjaController
 {
     public function setting(){
         return new SettingController;
+    }
+
+    public function role(){
+        $assessedIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
+        $assessed = JobDesc::whereIn('job_title_id', $assessedIds)->get();
+        $myJobDesc = JobDesc::where('user_id', auth()->user()->id)->first();
+        $checkAssessor =  PersonnelEvaluator::where('evaluator', $myJobDesc->job_title_id)->get();
+
+        $role = [];
+
+        if($assessed->where('user_id', auth()->user()->id)->count()){
+            $role['role'] = 'assessed';
+        }elseif(auth()->user()->hasRole('hrm')){
+            $role['role'] = 'hrm';
+        }elseif($checkAssessor->count()){
+            $role['role'] = 'assessor';
+        }else{
+            $role['role'] = '';
+        }
+
+        return collect($role);
     }
 
     public function currentJobTitle(){

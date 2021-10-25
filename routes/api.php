@@ -68,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('evkinja/siap-evaluasi', [\App\Http\Controllers\Evkinja\PersonnelController::class, 'siapEvaluasi']);
     Route::get('evkinja/proses-evaluasi', [\App\Http\Controllers\Evkinja\PersonnelController::class, 'prosesEvaluasi']);
     Route::get('evkinja/selesai-evaluasi', [\App\Http\Controllers\Evkinja\PersonnelController::class, 'selesaiEvaluasi']);
+    Route::get('evkinja/role', [\App\Http\Controllers\Evkinja\PersonnelController::class, 'role']);
 
     Route::get('evkinja/personil/{evkinja_id}', [\App\Http\Controllers\Evkinja\ValueController::class, 'thisValueUser']);
     Route::get('evkinja/content/{evkinja_id}', [\App\Http\Controllers\Evkinja\ValueController::class, 'thisValueContent']);
