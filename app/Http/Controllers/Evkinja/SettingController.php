@@ -11,4 +11,5 @@ class SettingController extends EvkinjaController
     public function currentSetting(){
         return personnelEvaluationSetting::where('quarter', $this->thisQuarter())->where('year', $this->thisYear())->get();
     }
+
 }

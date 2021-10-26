@@ -39,10 +39,18 @@ class MyZoneController extends TimeController
     }
 
     public function subordinates(){
+        $zoneLevelId = auth()->user()->jobDesc->jobTitle->zone_level_id;
+
+        if($zoneLevelId == 2 | 3 ) {
+            $subZoneLevel = [4];
+        }elseif($zoneLevelId == 1 ){
+            $subZoneLevel = [2,3,4];
+        }
+
         $workzones = [];
 
         foreach($this->districts() as $key => $District){
-            $datas = WorkZone::where('district_id', $District->id)->where('year', $this->thisYear())->get();
+            $datas = WorkZone::where('district_id', $District->id)->where('year', $this->thisYear())->whereIn('zone_level_id', $subZoneLevel)->get();
 
             foreach($datas as $data){
                 $workzones[] = $data;

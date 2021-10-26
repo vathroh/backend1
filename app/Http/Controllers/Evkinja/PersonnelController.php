@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Evkinja;
 
 use App\Http\Controllers\Evkinja\EvkinjaController;
-use App\Http\Controllers\Evkinja\SettingController;
-use App\Models\PersonnelEvaluationSetting;
-use App\Models\PersonnelEvaluationValue;
+use App\Http\Controllers\Zone\MyZoneController;
 use App\Models\PersonnelEvaluator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use App\Models\JobTitle;
 use App\Models\JobDesc;
+use Illuminate\Support\Arr;
+use App\Models\PersonnelEvaluationValue;
+use App\Models\PersonnelEvaluationSetting;
+use App\Http\Controllers\Evkinja\SettingController;
+use App\Http\Controllers\Evkinja\AssessorController;
 
 class PersonnelController extends EvkinjaController
 {
@@ -18,9 +20,17 @@ class PersonnelController extends EvkinjaController
         return new SettingController;
     }
 
+    public function myZone(){
+        return new MyZoneController;
+    }
+
+    public function assessor(){
+        return new AssessorController;
+    }
+
     public function role(){
-        $assessedIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
-        $assessed = JobDesc::whereIn('job_title_id', $assessedIds)->get();
+        $assessedJobIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
+        $assessed = JobDesc::whereIn('job_title_id', $assessedJobIds)->get();
         $myJobDesc = JobDesc::where('user_id', auth()->user()->id)->first();
         $checkAssessor =  PersonnelEvaluator::where('evaluator', $myJobDesc->job_title_id)->get();
 
@@ -40,14 +50,22 @@ class PersonnelController extends EvkinjaController
     }
 
     public function currentJobTitle(){
+        return \Carbon\Carbon::now()->timestamp;
+        $myWorkZoneIds = collect($this->myZone()->subordinates())->pluck('id');
         $evkinjaValue = $this->evkinjaValue();
-        $jobTitleIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
+
+        if(auth()->user()->hasRole('hrm')){
+
+            $jobTitleIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
+        }else {
+            $jobTitleIds =  $this->setting()->currentSetting()->whereIn('jobTitleId', $this->assessor()->jobAssessed())->unique('jobTitleId')->pluck('jobTitleId');
+        }
 
         $jobTitles =  JobTitle::find($jobTitleIds);
 
         foreach($jobTitles as $jobTitle){
             $thisEvkinjaValues = collect($evkinjaValue)->where('job_title_id', $jobTitle->id);
-            $jobDescs = JobDesc::where('job_title_id', $jobTitle->id);
+            $jobDescs = JobDesc::where('job_title_id', $jobTitle->id)->whereIn('work_zone_id', $myWorkZoneIds)->get();
             $availableEvkinjaValue = $thisEvkinjaValues->whereIn('user_id', $jobDescs->pluck('user_id'));
 
             $jobTitle->count = $jobDescs->count();

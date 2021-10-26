@@ -74,6 +74,9 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('evkinja/content/{evkinja_id}', [\App\Http\Controllers\Evkinja\ValueController::class, 'thisValueContent']);
     Route::get('evkinja/data/{evkinja_id}', [\App\Http\Controllers\Evkinja\ValueController::class, 'thisValue']);
     Route::get('evkinja/setting/{evkinja_id}', [\App\Http\Controllers\Evkinja\ValueController::class, 'thisSetting']);
+
+    Route::get('evkinja/aspects', [\App\Http\Controllers\Evkinja\AspectController::class, 'index']);
+    Route::get('evkinja/criteria', [\App\Http\Controllers\Evkinja\CriteriaController::class, 'index']);
 });
 
 

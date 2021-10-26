@@ -63,4 +63,7 @@ class User extends Authenticatable
         return false;
     }
 
+    public function jobDesc(){
+        return $this->hasOne(JobDesc::class);
+    }
 }
