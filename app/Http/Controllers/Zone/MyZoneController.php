@@ -41,7 +41,9 @@ class MyZoneController extends TimeController
     public function subordinates(){
         $zoneLevelId = auth()->user()->jobDesc->jobTitle->zone_level_id;
 
-        if($zoneLevelId == 2 | 3 ) {
+        if($zoneLevelId == 2 ) {
+            $subZoneLevel = [4];
+        }elseif($zoneLevelId == 3 ) {
             $subZoneLevel = [4];
         }elseif($zoneLevelId == 1 ){
             $subZoneLevel = [2,3,4];

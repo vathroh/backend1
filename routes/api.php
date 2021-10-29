@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function(){
     | Personnels
     *
     */
+    Route::get('me', [\App\Http\Controllers\Personnel\PersonnelController::class, 'me']);
     Route::get('personnels', [\App\Http\Controllers\Personnel\PersonnelController::class, 'personnels']);
     Route::get('personnels-at/{day}/{month}/{year}', [\App\Http\Controllers\Personnel\PersonnelController::class, 'personnelsAt']);
     /*

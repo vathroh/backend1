@@ -9,6 +9,11 @@ use App\Models\JobDesc;
 
 class PersonnelController extends Controller
 {
+    public function me(){
+        $me = JobDesc::where('user_id', auth()->user()->id)->get();
+        return $this->details($me);
+    }
+
     public function personnels(){
         $personnels = JobDesc::get();
         return $this->details($personnels);
@@ -24,6 +29,7 @@ class PersonnelController extends Controller
         foreach($personnels as $personnel){
             $personnel->name = $personnel->User->name;
             $personnel->jobTitle = $personnel->JobTitle->job_title;
+            $personnel->zone_level_id = $personnel->JobTitle->zone_level_id;
 
             $district_id = $personnel->Workzone->district_id;
 
@@ -38,7 +44,8 @@ class PersonnelController extends Controller
                 'user_id' => $item->user_id,
                 'name' => $item->name,
                 'jobTitle' => $item->jobTitle,
-                'district' => $item->district
+                'district' => $item->district,
+                'zone_level_id' => $item->zone_level_id
             ];
         });
     }

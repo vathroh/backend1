@@ -35,48 +35,63 @@ class PersonnelController extends EvkinjaController
         $checkAssessor =  PersonnelEvaluator::where('evaluator', $myJobDesc->job_title_id)->get();
 
         $role = [];
+        $role['assessor'] = false;
+        $role['assessed'] = false;
+        $role['hrm'] = false;
 
         if($assessed->where('user_id', auth()->user()->id)->count()){
-            $role['role'] = 'assessed';
-        }elseif(auth()->user()->hasRole('hrm')){
-            $role['role'] = 'hrm';
-        }elseif($checkAssessor->count()){
-            $role['role'] = 'assessor';
-        }else{
-            $role['role'] = '';
+            $role['assessed'] = true;
         }
-
+        if(auth()->user()->hasRole('hrm')){
+            $role['hrm'] = true;
+        }
+        if($checkAssessor->count()){
+            $role['assessor'] = true;
+        }
+       
         return collect($role);
     }
 
-    public function currentJobTitle(){
-        return \Carbon\Carbon::now()->timestamp;
-        $myWorkZoneIds = collect($this->myZone()->subordinates())->pluck('id');
-        $evkinjaValue = $this->evkinjaValue();
-
+    public function jobTitleIds(){
+ 
         if(auth()->user()->hasRole('hrm')){
-
             $jobTitleIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
         }else {
             $jobTitleIds =  $this->setting()->currentSetting()->whereIn('jobTitleId', $this->assessor()->jobAssessed())->unique('jobTitleId')->pluck('jobTitleId');
         }
 
+        return $jobTitleIds;
+   }
+
+    public function currentJobTitle(){
+        $jobTitleIds = $this->jobTitleIds();
+        $myWorkZoneIds = collect($this->myZone()->subordinates())->pluck('id');
+        $evkinjaValue = $this->evkinjaValue();
+
         $jobTitles =  JobTitle::find($jobTitleIds);
 
         foreach($jobTitles as $jobTitle){
             $thisEvkinjaValues = collect($evkinjaValue)->where('job_title_id', $jobTitle->id);
-            $jobDescs = JobDesc::where('job_title_id', $jobTitle->id)->whereIn('work_zone_id', $myWorkZoneIds)->get();
-            $availableEvkinjaValue = $thisEvkinjaValues->whereIn('user_id', $jobDescs->pluck('user_id'));
+            $Ids = JobDesc::where('job_title_id', $jobTitle->id)->whereIn('work_zone_id', $myWorkZoneIds)->get();
+            $availableEvkinja = $thisEvkinjaValues->whereIn('user_id', $Ids->pluck('user_id'));
 
-            $jobTitle->count = $jobDescs->count();
-            $jobTitle->belumMengisi = $jobDescs->whereNotIn('user_id', $thisEvkinjaValues->pluck('user_id'))->count();
-            $jobTitle->prosesMengisi = $availableEvkinjaValue->where('ok_by_user', 0)->count();
-            $jobTitle->selesaiMengisi = $availableEvkinjaValue->where('ok_by_user', 1)->count();
-            $jobTitle->siapEvaluasi = $availableEvkinjaValue->where('totalScore', 0.00)->where('ready', 0)->count();
-            $jobTitle->prosesEvaluasi = $availableEvkinjaValue->where('totalScore','!=', 0.00)->where('ready', 0)->count();
-            $jobTitle->selesaiEvaluasi = $availableEvkinjaValue->where('ready', 1)->count();
+
+        $jobDescs = $this->evkinjaPersonnelDetails($Ids, $availableEvkinja);
+
+            $jobTitle->count = $jobDescs;
+            $jobTitle->belumMengisi = $jobDescs->whereNotIn('user_id', $thisEvkinjaValues->pluck('user_id'));
+            $jobTitle->prosesMengisi = $jobDescs->whereIn('user_id', $availableEvkinja->where('ok_by_user', 0)->pluck('user_id'));
+            $jobTitle->selesaiMengisi = $jobDescs->whereIn('user_id', $availableEvkinja->where('ok_by_user', 1)->pluck('user_id'));
+            $jobTitle->siapEvaluasi = $jobDescs->whereIn('user_id', $availableEvkinja->where('totalScore', '0.00')->where('ok_by_user', 1)->pluck('user_id'));
+            $jobTitle->prosesEvaluasi = $jobDescs->whereIn('user_id', $availableEvkinja->where('totalScore','!=', 0.00)->where('ready', 0)->pluck('user_id'));
+            $jobTitle->selesaiEvaluasi = $jobDescs->whereIn('user_id', $availableEvkinja->where('ready', 1)->pluck('user_id'));
         }
 
+        return $this->map($jobTitles);
+
+    }
+
+    public function map($jobTitles){
         return $jobTitles->map(function ($item, $key) {
             return [
                 'id' => $item->id,
@@ -93,7 +108,7 @@ class PersonnelController extends EvkinjaController
     }
 
     public function belumMengisi(){
-        $jobTitleIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
+        $jobTitleIds = $this->jobTitleIds();
         $jobDescs = JobDesc::whereIn('job_title_id', $jobTitleIds)->get();
         $availableEvkinja = collect($this->evkinjaValue());
         $evkinjaUserIds = collect($availableEvkinja)->pluck('user_id');
@@ -123,8 +138,9 @@ class PersonnelController extends EvkinjaController
     }
 
     public function evkinjaPersonnels($where1, $operator1, $value1, $where2, $operator2, $value2){
-        $jobTitleIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
-        $jobDescs = JobDesc::whereIn('job_title_id', $jobTitleIds)->get();
+        $jobTitleIds = $this->jobTitleIds();
+        $myWorkZoneIds = collect($this->myZone()->subordinates())->pluck('id');
+        $jobDescs = JobDesc::whereIn('job_title_id', $jobTitleIds)->whereIn('work_zone_id', $myWorkZoneIds)->get();
         $availableEvkinja = collect($this->evkinjaValue())->where($where1, $operator1, $value1)->where($where2, $operator2, $value2);
         $evkinjaUserIds = $availableEvkinja->pluck('user_id');
         $Ids = $jobDescs->whereIn('user_id', $evkinjaUserIds);
