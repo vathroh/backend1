@@ -18,11 +18,11 @@ class WorkZone extends Model
     }
 
     public function Districts(){
-        return $this->morphedByMany(District::class, 'work_zonable');
+        return $this->morphedByMany(District::class, 'work_zonable1');
     }
 
     public function Villages(){
-        return $this->morphedByMany(Village::class, 'work_zonable');
+        return $this->morphedByMany(Village::class, 'work_zonable1');
     }
 
 }
