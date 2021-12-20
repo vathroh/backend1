@@ -11,4 +11,8 @@ class AspectController extends Controller
     public function index(){
         return PersonnelEvaluationAspect::all();
     }
+
+    public function perJobTitle(Request $request){
+        return $this->index()->where('evaluate_to', $request->job_title_id);
+    }
 }

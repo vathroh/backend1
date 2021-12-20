@@ -53,7 +53,6 @@ class PersonnelController extends EvkinjaController
     }
 
     public function jobTitleIds(){
- 
         if(auth()->user()->hasRole('hrm')){
             $jobTitleIds =  $this->setting()->currentSetting()->unique('jobTitleId')->pluck('jobTitleId');
         }else {
@@ -75,8 +74,7 @@ class PersonnelController extends EvkinjaController
             $Ids = JobDesc::where('job_title_id', $jobTitle->id)->whereIn('work_zone_id', $myWorkZoneIds)->get();
             $availableEvkinja = $thisEvkinjaValues->whereIn('user_id', $Ids->pluck('user_id'));
 
-
-        $jobDescs = $this->evkinjaPersonnelDetails($Ids, $availableEvkinja);
+            $jobDescs = $this->evkinjaPersonnelDetails($Ids, $availableEvkinja);
 
             $jobTitle->count = $jobDescs;
             $jobTitle->belumMengisi = $jobDescs->whereNotIn('user_id', $thisEvkinjaValues->pluck('user_id'));
@@ -88,7 +86,6 @@ class PersonnelController extends EvkinjaController
         }
 
         return $this->map($jobTitles);
-
     }
 
     public function map($jobTitles){

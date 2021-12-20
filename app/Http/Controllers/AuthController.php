@@ -44,7 +44,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('token')->plainTextToken;
 
-        $cookie = cookie('jwt', $token, 60*24);
+        $cookie = cookie('jtosp1', $token, 60*24);
 
         return response([
             'message' => 'Anda berhasil login.'
@@ -53,7 +53,7 @@ class AuthController extends Controller
     }
 
     public function logout(Request $request){
-        $cookie = Cookie::forget('jwt');
+        $cookie = Cookie::forget('jtosp1');
 
         return response([
             'message' => 'Anda sudah berhasil logout.'

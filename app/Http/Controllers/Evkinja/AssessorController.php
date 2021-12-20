@@ -14,7 +14,7 @@ class AssessorController extends EvkinjaController
     }
 
     public function jobAssessed(){
-        $myJobId = auth()->user()->jobDesc->job_title_id;
+        $myJobId = auth()->user()->jobDesc ? auth()->user()->jobDesc->job_title_id : 0;
         return PersonnelEvaluator::where('evaluator', $myJobId)->pluck('jobId');
     }
 }

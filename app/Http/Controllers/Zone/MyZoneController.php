@@ -47,6 +47,8 @@ class MyZoneController extends TimeController
             $subZoneLevel = [4];
         }elseif($zoneLevelId == 1 ){
             $subZoneLevel = [2,3,4];
+        }else{
+            $subZoneLevel = [];
         }
 
         $workzones = [];

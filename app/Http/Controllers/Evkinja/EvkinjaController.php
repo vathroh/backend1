@@ -38,4 +38,16 @@ class EvkinjaController extends Controller
 
         return $year;
     }
+
+    public function myZone(){
+        return new \App\Http\Controllers\Zone\MyZoneController;
+    }
+
+    public function personnel(){
+        return new  \App\Http\Controllers\Evkinja\PersonnelController;
+    }
+
+    public function setting(){
+        return new  \App\Http\Controllers\Evkinja\SettingController;
+    }
 }

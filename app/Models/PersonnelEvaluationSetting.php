@@ -9,6 +9,7 @@ class PersonnelEvaluationSetting extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
 
     public function jobDesc(){
         return $this->hasMany(JobDesc::class, 'job_title_id', 'jobTitleId');
@@ -17,5 +18,13 @@ class PersonnelEvaluationSetting extends Model
 
     public function evkinjaValue(){
         return $this->hasMany(PersonnelEvaluationValue::class, 'settingId');
+    }
+
+    public function jobTitle(){
+        return $this->belongsTo(JobTitle::class, 'jobTitleId');
+    }
+
+    public function zoneLocation(){
+        return $this->belongsTo(ZoneLocation::class);
     }
 }
